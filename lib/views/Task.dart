@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:roundcheckbox/roundcheckbox.dart';
 
+import 'home.dart';
+
 class Task extends StatefulWidget {
   final int index;
   final String taskName;
@@ -28,30 +30,31 @@ class _TaskState extends State<Task> {
         motion: const StretchMotion(),
         children: [
           SlidableAction(
-              foregroundColor: Colors.black,
-              backgroundColor: Colors.grey,
+              flex: 1,
+              foregroundColor: Colors.white,
+              backgroundColor: Colors.transparent,
               icon: Icons.delete,
-              borderRadius: BorderRadius.circular(20),
               label: 'Delete Task',
               onPressed: widget.deleteFunc),
         ],
       ),
       child: Container(
         padding: const EdgeInsets.all(10),
-        height: size.height * .8,
-        margin: const EdgeInsets.all(10),
+        height: size.height * .1,
+        margin: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
             color: Colors.grey[900], borderRadius: BorderRadius.circular(20)),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            RoundCheckBox(onTap:(checkbox)=> widget.onChanged,size: 30,animationDuration:const  Duration(seconds: 1),uncheckedColor: Colors.white,borderColor: Colors.black),
-             //Checkbox(
-            //   value: widget.checkbox,
-            //   onChanged: widget.onChanged,
-            //   activeColor: Colors.grey,
-            // ),
+            RoundCheckBox(
+                onTap: widget.onChanged,
+                isChecked: widget.checkbox,
+                size: 30,
+                animationDuration: const Duration(seconds: 1),
+                uncheckedColor: Colors.white,
+                borderColor: Colors.black),
             SizedBox(
               width: size.height * .01,
             ),
@@ -62,7 +65,7 @@ class _TaskState extends State<Task> {
                       ? TextDecoration.lineThrough
                       : TextDecoration.none,
                   color: Colors.white,
-                  fontSize: size.height * .018,
+                  fontSize: widget.taskName.length < 25 ? 20 : 13,
                   fontWeight: FontWeight.bold),
             )
           ],

@@ -1,9 +1,10 @@
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
-import '../components/Components.dart';
 import 'Task.dart';
 import '../Data/Data.dart';
+
+final _mybox = Hive.box('MyBox');
+ToDoDataBase db = ToDoDataBase();
 
 class HomePage extends StatefulWidget {
   @override
@@ -11,8 +12,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final _mybox = Hive.box('MyBox');
-  ToDoDataBase db = ToDoDataBase();
   var _controller = TextEditingController();
 
   @override
@@ -25,7 +24,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  checkBoxFunc(int index) {
+  void checkBoxFunc(int index) {
     setState(() {
       db.data[index][1] = !db.data[index][1];
     });
@@ -44,85 +43,129 @@ class _HomePageState extends State<HomePage> {
       _controller.clear();
     });
     db.updateData();
-    Navigator.of(context).pop();
   }
 
   void cancelFunc() {
     Navigator.of(context).pop();
   }
 
-  void createNewTask() {
-    showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            backgroundColor: Colors.grey,
-            actions: [
-              Column(
-                children: [
-                  TextField(
-                    controller: _controller,
-                    decoration: const InputDecoration(
-                        hintText: 'TYPE THE NAME OF THE TASK HERE'),
-                  ),
-                  Row(
-                    children: [
-                      CustomMaterialButton(saveFunc, 'save'),
-                      CustomMaterialButton(cancelFunc, 'cancel')
-                    ],
-                  )
-                ],
-              )
-            ],
-          );
-        });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Colors.grey[700],
-        floatingActionButton: FloatingActionButton(
-            onPressed: createNewTask,
-            backgroundColor: Colors.amber,
-            child: const Icon(Icons.add)),
+        backgroundColor: Colors.grey[800],
         appBar: AppBar(
-          title: const Text('ToDo',
-              style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+          title: const Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Icon(Icons.menu),
+              Text('Your tasks',
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+              CircleAvatar(
+                  child: Image(
+                image: AssetImage(''),
+              )),
+            ],
+          ),
           centerTitle: true,
           backgroundColor: Colors.grey[900],
         ),
-  body:Center(
-    child: SizedBox(
-      height: 1000,
-      child: CarouselSlider(    
-      
-                items: 
-                    db.data.map(				
-                      (e) => 
-                      Task(
-                      checkbox: e[1],
-                      index: db.data.indexOf(e),
-                      taskName: e[0],
-                      onChanged: (_) => checkBoxFunc(db.data.indexOf(e)),
-                      deleteFunc: (context) => deleteTask(db.data.indexOf(e))
-                    ))
-                    .toList(),
-                options: CarouselOptions(initialPage: 0,scrollDirection: Axis.vertical,enableInfiniteScroll: false),
+        body: Padding(
+          padding: const EdgeInsets.only(top: 30, left: 10, right: 10),
+          child: Stack(children: [
+            Padding(
+              padding: const EdgeInsets.only(bottom: 70),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  searchBox(),
+                  Expanded(
+                    child: ListView(
+                      children: [
+                        const Text("Your tasks",
+                            style:
+                                TextStyle(fontSize: 30, color: Colors.white)),
+                        ...db.data
+                            .map((e) => Task(
+                                  checkbox: db.data[db.data.indexOf(e)][1],
+                                  index: db.data.indexOf(e),
+                                  taskName: db.data[db.data.indexOf(e)][0],
+                                  onChanged: (_) =>
+                                      checkBoxFunc(db.data.indexOf(e)),
+                                  deleteFunc: (context) =>
+                                      deleteTask(db.data.indexOf(e)),
+                                ))
+                            .toList(),
+                      ],
+                    ),
+                  )
+                ],
               ),
-    ),
-  ), 
-    );
-  }}
+            ),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      height: 40,
+                      margin: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        color: Colors.white,
+                        boxShadow: const [
+                          BoxShadow(
+                            blurStyle: BlurStyle.inner,
+                            color: Colors.white,
+                            offset: Offset(-5, 0),
+                            blurRadius: 3,
+                            spreadRadius: 10,
+                          ),
+                        ],
+                      ),
+                      child: TextField(
+                          controller: _controller,
+                          decoration: const InputDecoration(
+                              hintText: "Add a new task",
+                              hintStyle: TextStyle(color: Colors.grey),
+                              border: InputBorder.none,
+                              prefixIcon: Icon(
+                                Icons.task,
+                                color: Colors.black,
+                              ))),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () => saveFunc(),
+                    child: Container(
+                      height: 55,
+                      width: 55,
+                      decoration: BoxDecoration(
+                          color: Colors.amber,
+                          borderRadius: BorderRadius.circular(10)),
+                      child: const Icon(Icons.add),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ]),
+        ));
+  }
 
-//         body: ListView.builder(
-//             itemCount: db.data.length,
-//             itemBuilder: (context, index) => Task(
-//                   checkbox: db.data[index][1],
-//                   index: index,
-//                   taskName: db.data[index][0],
-//                   onChanged: (_) => checkBoxFunc(index),
-//                   deleteFunc: (context) => deleteTask(index),
-//                 )));
-//   }
-// }
+  Container searchBox() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 40),
+      decoration: BoxDecoration(
+          color: Colors.white, borderRadius: BorderRadius.circular(20)),
+      child: const TextField(
+          decoration: InputDecoration(
+              hintText: "Search",
+              hintStyle: TextStyle(color: Colors.grey),
+              border: InputBorder.none,
+              prefixIcon: Icon(
+                Icons.search,
+                color: Colors.black,
+              ))),
+    );
+  }
+}
